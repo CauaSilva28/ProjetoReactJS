@@ -1,19 +1,26 @@
 import { Calendar, MapPin, MoveRight, Settings2, X } from "lucide-react"
 import { Button } from "../../../components/button"
 import { useState } from "react"
-import { DayPicker } from "react-day-picker"
+import { DateRange, DayPicker } from "react-day-picker"
+import { format } from "date-fns"
 import "react-day-picker/dist/style.css";
 
 interface DestinationAndDateStepProps{
     isGuestsInputOpen: boolean
     closeGuestsInput: () => void
     openGuestsInput: () => void
+    setDestination: (destination: string) => void
+    setEventStartAndDates: (dates:DateRange | undefined) => void
+    eventStartAndDates: DateRange | undefined
 }
 
 export function DestinationAndDateStep({
 closeGuestsInput,
 isGuestsInputOpen,
 openGuestsInput,
+setDestination,
+setEventStartAndDates,
+eventStartAndDates,
 }:DestinationAndDateStepProps){
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
 
@@ -24,24 +31,34 @@ openGuestsInput,
         return setIsDatePickerOpen(false)
     }
 
+    const displayedDate = eventStartAndDates && eventStartAndDates.from && eventStartAndDates.to 
+    ? format(eventStartAndDates.from, "d' de ' LLL").concat(' até ').concat(format(eventStartAndDates.to, "d' de 'LLL"))
+    : null
+
     return(
         <div className="h-16 bg-zinc-900 px-4 rounded-xl flex items-center shadow-shape gap-3">
             <div className="flex items-center gap-2 flex-1">
                 <MapPin className="size-5 text-zinc-400" /> {/* icone que foi importado */}
-                <input disabled={isGuestsInputOpen} className="text-zinc-400 bg-transparent text-lg outline-none flex-1" type="text" placeholder="Para onde você vai?"></input>
+                <input 
+                disabled={isGuestsInputOpen} 
+                className="text-zinc-400 bg-transparent text-lg outline-none flex-1" 
+                type="text" 
+                placeholder="Para onde você vai?"
+                onChange={event => setDestination(event.target.value)}></input>
             </div>
 
             <button onClick={openDatePicker} disabled={isGuestsInputOpen} className="flex items-center gap-2 text-left">
                 <Calendar className="size-5 text-zinc-400"/>
-                <span className="text-zinc-400 text-lg w-40">
-                    Quando?
+                <span className="text-zinc-400 text-lg w-52">
+                    {displayedDate || 'Quando?'}
                 </span>
             </button>
 
             {isDatePickerOpen && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
-                <div className="w-[320px] rounded-xl py-5 px-6 shadow-shape bg-zinc-900 space-y-5">
-                    <div className="space-y-2">
+                <div className="w-[320px] rounded-xl py-5 shadow-shape bg-zinc-900 space-y-4">
+                    
+                    <div className="space-y-2 px-6">
                         <div className="flex items-center justify-between">
                             <h2 className="text-lg font-semibold">Selecione a data</h2>
                             <button onClick = {closeDatePicker}>
@@ -50,7 +67,9 @@ openGuestsInput,
                         </div>
                     </div>
 
-                    <DayPicker mode="range" />
+                    <div className="w-full h-px bg-zinc-800"></div>
+
+                    <DayPicker mode="range" selected={eventStartAndDates} onSelect={setEventStartAndDates} />
 
                 </div>
             </div>
